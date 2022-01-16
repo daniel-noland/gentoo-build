@@ -1,0 +1,9 @@
+sys-devel/clang -openmp binutils-plugin compiler-rt default-compiler-rt default-lld exegesis libcxx llvm-libunwind runtime sanitize static-analyzer xar
+#sys-devel/lld -openmp binutils-plugin compiler-rt default-compiler-rt default-lld exegesis libcxx llvm-libunwind runtime sanitize static-analyzer xar
+#sys-devel/llvm -openmp binutils-plugin compiler-rt default-compiler-rt default-lld exegesis libcxx llvm-libunwind runtime sanitize static-analyzer xar
+#sys-libs/compiler-rt -openmp binutils-plugin compiler-rt default-compiler-rt default-lld exegesis libcxx llvm-libunwind runtime sanitize static-analyzer xar
+#sys-libs/compiler-rt-sanitizers -openmp binutils-plugin compiler-rt default-compiler-rt default-lld exegesis libcxx llvm-libunwind runtime sanitize static-analyzer xar
+#sys-libs/libcxx -openmp binutils-plugin compiler-rt default-compiler-rt default-lld exegesis libcxx llvm-libunwind runtime sanitize static-analyzer xar
+#sys-libs/libcxxabi -openmp binutils-plugin compiler-rt default-compiler-rt default-lld exegesis libcxx llvm-libunwind runtime sanitize static-analyzer xar
+#sys-libs/llvm-libunwind -openmp binutils-plugin compiler-rt default-compiler-rt default-lld exegesis libcxx llvm-libunwind runtime sanitize static-analyzer xar
+#
