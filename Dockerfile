@@ -43,6 +43,15 @@ FROM bootstrap_step2 as bootstrap_step3
 
 COPY assets/bootstrap/3/ /
 
+# Compile llvm-libunwind again because its static lib was missing in the previous build
+# (the "static" USE flag was not set because it messes with the bootstrapping process)
+RUN \
+set -eux; \
+emerge \
+  llvm-libunwind \
+; \
+:;
+
 # Re-compile optimized llvm/clang with llvm/clang
 RUN \
 set -eux; \
@@ -62,50 +71,20 @@ FROM bootstrap_step3 as bootstrap_step4
 
 COPY assets/bootstrap/4/ /
 
-# Compile llvm-libunwind again because its static lib was missing in the previous build
-# (the static USE flag was not set)
-RUN \
-set -eux; \
-emerge \
-  llvm-libunwind \
-; \
-:;
-
-# Re-compile all system packages with optimized llvm/clang
+# Re-compile all system packages with optimized llvm/clang.
+# We do this twice to facilitate LTO / static linking.
+# Perviously satisfied bootstrap dep libs are available statically after the first rebuild.
+# Those libs are then candidates for static linking (and better LTO) in the second build.
 RUN \
 --security=insecure \
 set -eux; \
-emerge \
-  --deep \
-  --emptytree \
-  --newuse \
-  --update \
-  @world \
-; \
-:;
-#
-# Re-compile again (x2) to facilitate static linking.
-# (perviously satisfied deps are now available statically which is important for lto)
-RUN \
---security=insecure \
-set -eux; \
-emerge \
-  --deep \
-  --emptytree \
-  --newuse \
-  --update \
-  @world \
+for _ in 1 2; do \
+  emerge \
+    --deep \
+    --emptytree \
+    --newuse \
+    --update \
+    @world \
   ; \
-:;
-
-RUN \
---security=insecure \
-set -eux; \
-emerge \
-  --deep \
-  --emptytree \
-  --newuse \
-  --update \
-  @world \
-  ; \
+done; \
 :;
