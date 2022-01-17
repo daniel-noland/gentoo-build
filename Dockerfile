@@ -45,21 +45,13 @@ FROM bootstrap_step2 as bootstrap_step3
 
 COPY assets/bootstrap/3/ /
 
-# Compile llvm-libunwind again because its static lib was missing in the previous build
-# (the "static" USE flag was not set because it messes with the bootstrapping process)
-RUN \
-set -eux; \
-nice --adjustment=19 \
-emerge \
-  llvm-libunwind \
-; \
-:;
-
 # Re-compile optimized llvm/clang with llvm/clang
 RUN \
 set -eux; \
 nice --adjustment=19 \
 emerge \
+  --newuse \
+  --update \
   clang \
   compiler-rt \
   libcxx \
@@ -75,20 +67,45 @@ FROM bootstrap_step3 as bootstrap_step4
 COPY assets/bootstrap/4/ /
 
 # Re-compile all system packages with optimized llvm/clang.
-# We do this twice to facilitate LTO / static linking.
-# Perviously satisfied bootstrap dep libs are available statically after the first rebuild.
-# Those libs are then candidates for static linking (and better LTO) in the second build.
 RUN \
 --security=insecure \
 set -eux; \
-for _ in 1 2; do \
-  nice --adjustment=19 \
-  emerge \
-    --deep \
-    --emptytree \
-    --newuse \
-    --update \
-    @world \
-  ; \
-done; \
+nice --adjustment=19 \
+emerge \
+  --deep \
+  --emptytree \
+  --newuse \
+  --update \
+  @world \
+; \
+:;
+
+FROM bootstrap_step4 as bootstrap_step5
+
+# Compile zstd compression so we can package up our final builds (in case it somehow wasn't already installed)
+RUN \
+--security=insecure \
+set -eux; \
+nice --adjustment=19 \
+emerge \
+  app-arch/zstd \
+; \
+:;
+
+# Re-compile all system packages with optimized llvm/clang (again).
+# We do this twice to facilitate LTO / static linking.
+# Perviously satisfied bootstrap dep libs are available statically after the first rebuild.
+# Those libs are then candidates for static linking (and better LTO) in the second build.
+# God willing, we should now be able to produce pre-compiled binaries of all our work :)
+RUN \
+--security=insecure \
+set -eux; \
+nice --adjustment=19 \
+emerge \
+  --deep \
+  --emptytree \
+  --newuse \
+  --update \
+  @world \
+; \
 :;
