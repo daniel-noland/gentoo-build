@@ -11,6 +11,7 @@ COPY assets/bootstrap/1/ /
 # Compile llvm/clang with gcc
 RUN \
 set -eux; \
+nice --adjustment=19 \
 emerge \
   clang \
   compiler-rt \
@@ -27,6 +28,7 @@ COPY assets/bootstrap/2/ /
 # Compile llvm/clang with llvm/clang
 RUN \
 set -eux; \
+nice --adjustment=19 \
 emerge \
   clang \
   compiler-rt \
@@ -47,6 +49,7 @@ COPY assets/bootstrap/3/ /
 # (the "static" USE flag was not set because it messes with the bootstrapping process)
 RUN \
 set -eux; \
+nice --adjustment=19 \
 emerge \
   llvm-libunwind \
 ; \
@@ -55,6 +58,7 @@ emerge \
 # Re-compile optimized llvm/clang with llvm/clang
 RUN \
 set -eux; \
+nice --adjustment=19 \
 emerge \
   clang \
   compiler-rt \
@@ -78,6 +82,7 @@ RUN \
 --security=insecure \
 set -eux; \
 for _ in 1 2; do \
+  nice --adjustment=19 \
   emerge \
     --deep \
     --emptytree \
