@@ -63,7 +63,6 @@ emerge \
   lld \
   llvm \
   llvm-libunwind \
-  z3 \
 ; \
 :;
 
