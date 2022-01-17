@@ -1,0 +1,13 @@
+*/* PYTHON_TARGETS: python3_10
+*/* PYTHON_SINGLE_TARGET: -python3_8 -python3_9 python3_10
+
+net-misc/openssh -static
+
+sys-devel/clang -openmp binutils-plugin compiler-rt default-compiler-rt default-lld exegesis libcxx llvm-libunwind runtime sanitize static-analyzer xar z3
+sys-devel/lld -openmp binutils-plugin compiler-rt default-compiler-rt default-lld exegesis libcxx llvm-libunwind runtime sanitize static-analyzer xar z3
+sys-devel/llvm -openmp binutils-plugin compiler-rt default-compiler-rt default-lld exegesis libcxx llvm-libunwind runtime sanitize static-analyzer xar z3
+sys-libs/compiler-rt -openmp binutils-plugin compiler-rt default-compiler-rt default-lld exegesis libcxx llvm-libunwind runtime sanitize static-analyzer xar z3
+sys-libs/compiler-rt-sanitizers -openmp binutils-plugin compiler-rt default-compiler-rt default-lld exegesis libcxx llvm-libunwind runtime sanitize static-analyzer xar z3
+sys-libs/libcxx -openmp binutils-plugin compiler-rt default-compiler-rt default-lld exegesis libcxx llvm-libunwind runtime sanitize static-analyzer xar z3
+sys-libs/libcxxabi -openmp binutils-plugin compiler-rt default-compiler-rt default-lld exegesis libcxx llvm-libunwind runtime sanitize static-analyzer xar z3
+sys-libs/llvm-libunwind -openmp binutils-plugin compiler-rt default-compiler-rt default-lld exegesis libcxx llvm-libunwind runtime sanitize static-analyzer xar z3
