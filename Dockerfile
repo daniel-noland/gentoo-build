@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.3-labs
-ARG bootstrap_step1=gentoo/stage3:musl-20220114
+ARG bootstrap_step1=gentoo/stage3:musl-20220118
 FROM $bootstrap_step1 as bootstrap_step1
 
 RUN emerge-webrsync
@@ -82,6 +82,13 @@ emerge \
 
 FROM bootstrap_step4 as bootstrap_step5
 
+RUN \
+--security=insecure \
+set -eux; \
+nice --adjustment=19 \
+emerge --depclean; \
+:;
+
 # Compile zstd compression so we can package up our final builds (in case it somehow wasn't already installed)
 RUN \
 --security=insecure \
@@ -108,4 +115,11 @@ emerge \
   --update \
   @world \
 ; \
+:;
+
+RUN \
+--security=insecure \
+set -eux; \
+nice --adjustment=19 \
+emerge --depclean; \
 :;
