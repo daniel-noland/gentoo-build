@@ -1,0 +1,4 @@
+multilib_src_configure() {
+	econf \
+		$(multilib_native_use_enable utils cli)
+}
