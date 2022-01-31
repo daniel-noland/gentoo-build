@@ -100,10 +100,10 @@ emerge \
 :;
 
 FROM catalyst_install as catalyst_stage1
-#RUN mkdir --parent /run/step1
+RUN mkdir --parent /run/step1
 #COPY --from=gentoo/stage3:musl-20220129 / /run/step1/
 
-#COPY assets/catalyst/ /
+COPY assets/catalyst/ /
 
 #RUN \
 #set -eux; \
@@ -111,17 +111,54 @@ FROM catalyst_install as catalyst_stage1
 #rm --force --recursive /run/step1/var/db/repos/gentoo; \
 #rm --force --recursive /run/step1/var/cache/distfiles; \
 #ln --relative --symbolic /run/step1/var/db/repos/dnoland /run/step1/var/db/repos/gentoo; \
-#echo 'PORTDIR="/var/db/repos/gentoo"' >> /run/step1/etc/portage/make.conf; \
+#git clone \
+#  --depth 1 \
+#  --branch 'v0.1/timestamp/2022-01-30T19.28.43+00.00' \
+#  'https://github.com/daniel-noland/gentoo' \
+#  /run/step1/var/db/repos/dnoland \
+#; \
 #tar --create --gz --file /var/tmp/catalyst/builds/musl/stage3-amd64-musl.tar.gz --directory=/run/step1 .; \
 #:;
 
 RUN \
 set -eux; \
+mkdir --parent /run/stage3; \
 mkdir --parent /var/tmp/catalyst/builds/musl; \
 wget \
-  --output-document="/var/tmp/catalyst/builds/musl/stage3-amd64-musl.tar.xz" \
-  "http://distfiles.gentoo.org/releases/amd64/autobuilds/current-stage3-amd64-musl/stage3-amd64-musl-20220130T170547Z.tar.xz" \
+  --output-document=- \
+  "http://distfiles.gentoo.org/releases/amd64/autobuilds/current-stage3-amd64-musl/stage3-amd64-musl-20220130T170547Z.tar.xz" | \
+tar --extract --xz --file=- --directory=/run/stage3; \
+truncate --size=0 /run/stage3/usr/share/portage/config/repos.conf; \
+cp --archive /tmp/catalyst/stage1/etc/portage/repos.conf /run/stage3/etc/portage/; \
+git clone \
+  --depth 1 \
+  --branch "v0.1/timestamp/2022-01-30T19.28.43+00.00" \
+  "https://github.com/daniel-noland/gentoo" \
+  /run/stage3/var/db/repos/gentoo \
 ; \
+tar \
+  --gz \
+  --create \
+  --file /var/tmp/catalyst/builds/musl/stage3-amd64-musl.tar.gz \
+  --directory=/run/stage3 \
+  . \
+; \
+:;
+
+#RUN \
+#set -eux; \
+#mkdir --parent /var/tmp/catalyst/builds/musl; \
+#wget \
+#  --output-document="/var/tmp/catalyst/builds/musl/stage3-amd64-musl.tar.xz" \
+#  "http://distfiles.gentoo.org/releases/amd64/autobuilds/current-stage3-amd64-musl/stage3-amd64-musl-20220130T170547Z.tar.xz" \
+#; \
+#:;
+
+RUN \
+set -eux; \
+mkdir --parent /var/tmp/catalyst/snapshots; \
+cd /run/stage3/var/db/repos/; \
+mksquashfs gentoo /var/tmp/catalyst/snapshots/gentoo-latest.sqfs; \
 :;
 
 #RUN \
@@ -137,18 +174,18 @@ wget \
 #mksquashfs /run/dnoland /var/tmp/catalyst/snapshots/gentoo-latest.sqfs; \
 #:;
 
-RUN \
---mount=type=tmpfs,target=/run \
-set -eux; \
-mkdir --parent /var/tmp/catalyst/snapshots; \
-wget --output-document="/run/portage-snapshot.tar.xz" \
-  "https://distfiles.gentoo.org/snapshots/gentoo-latest.tar.xz"; \
-mkdir --parent /run/squashfs; \
-tar --extract --file /run/portage-snapshot.tar.xz --strip-components=1 --directory=/run/squashfs; \
-mksquashfs /run/squashfs /var/tmp/catalyst/snapshots/gentoo-latest.sqfs; \
-:;
+#RUN \
+#--mount=type=tmpfs,target=/run \
+#set -eux; \
+#mkdir --parent /var/tmp/catalyst/snapshots; \
+#wget --output-document="/run/portage-snapshot.tar.xz" \
+#  "https://distfiles.gentoo.org/snapshots/gentoo-latest.tar.xz"; \
+#mkdir --parent /run/squashfs; \
+#tar --extract --file /run/portage-snapshot.tar.xz --strip-components=1 --directory=/run/squashfs; \
+#mksquashfs /run/squashfs /var/tmp/catalyst/snapshots/gentoo-latest.sqfs; \
+#:;
 
-COPY assets/catalyst/ /
+#COPY assets/catalyst/ /
 
 #RUN \
 #set -eux; \
