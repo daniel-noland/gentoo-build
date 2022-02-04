@@ -1,0 +1,10 @@
+subarch: amd64
+target: stage3
+version_stamp: latest
+rel_type: musl
+profile: default/linux/amd64/17.0/musl
+snapshot_treeish: latest
+source_subpath: musl/stage2-amd64-latest.tar.gz
+compression_mode: gzip
+#portage_confdir: @REPO_DIR@/releases/portage/stages
+#portage_prefix: releng

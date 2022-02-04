@@ -103,7 +103,7 @@ FROM catalyst_install as catalyst_stage1
 RUN mkdir --parent /run/step1
 #COPY --from=gentoo/stage3:musl-20220129 / /run/step1/
 
-COPY assets/catalyst/ /
+COPY assets/catalyst/tmp/ /tmp/
 
 #RUN \
 #set -eux; \
@@ -161,6 +161,36 @@ cd /run/stage3/var/db/repos/; \
 mksquashfs gentoo /var/tmp/catalyst/snapshots/gentoo-latest.sqfs; \
 :;
 
+COPY assets/catalyst/etc/ /etc/
+
+COPY assets/catalyst/specs/stage1.spec /specs/
+
+RUN \
+--security=insecure \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+catalyst --file /specs/stage1.spec; \
+:;
+
+COPY assets/catalyst/specs/stage2.spec /specs/
+
+RUN \
+--security=insecure \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+catalyst --file /specs/stage2.spec; \
+:;
+
+COPY assets/catalyst/specs/stage3.spec /specs/
+
+RUN \
+--security=insecure \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+catalyst --file /specs/stage3.spec; \
+:;
+
+#
 #RUN \
 #--mount=type=tmpfs,target=/run \
 #set -eux; \
