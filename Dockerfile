@@ -23,6 +23,7 @@ COPY ./assets/bootstrap/0/ /
 # If we can't do this then the whole rest of the process is doomed anyway.
 RUN \
 --mount=type=tmpfs,target=/run \
+--mount=type=tmpfs,target=/var/tmp/portage \
 set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
@@ -42,6 +43,7 @@ emerge --depclean; \
 
 RUN \
 --mount=type=tmpfs,target=/run \
+--mount=type=tmpfs,target=/var/tmp/portage \
 set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
@@ -87,6 +89,8 @@ RUN rm --force --recursive /var/db/repos/gentoo
 RUN emaint sync --allrepos
 
 RUN \
+--mount=type=tmpfs,target=/run \
+--mount=type=tmpfs,target=/var/tmp/portage \
 set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
@@ -117,6 +121,7 @@ COPY assets/bootstrap/2/ /
 # Compile llvm/clang with llvm/clang
 RUN \
 --mount=type=tmpfs,target=/run \
+--mount=type=tmpfs,target=/var/tmp/portage \
 set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
@@ -220,6 +225,7 @@ COPY ./assets/catalyst-install/ /
 
 RUN \
 --mount=type=tmpfs,target=/run \
+--mount=type=tmpfs,target=/var/tmp/portage \
 set -eux; \
 emerge \
   app-arch/pixz \
@@ -248,7 +254,7 @@ COPY assets/catalyst/tmp/ /tmp/
 #tar --create --gz --file /var/tmp/catalyst/builds/musl/stage3-amd64-musl.tar.gz --directory=/run/step1 .; \
 #:;
 
-COPY --from=bootstrap_step4_1 / /run/stage3
+COPY --from=bootstrap_step4_0 / /run/stage3
 
 RUN \
 set -eux; \
@@ -302,32 +308,32 @@ COPY assets/catalyst/etc/ /etc/
 
 COPY assets/catalyst/specs/stage1.spec /specs/
 
-#RUN \
-#--security=insecure \
-#--mount=type=tmpfs,target=/run \
-#set -eux; \
-#nice --adjustment="${build_niceness}" \
-#catalyst --file /specs/stage1.spec; \
-#:;
+RUN \
+--security=insecure \
+--mount=type=tmpfs,target=/run \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+catalyst --file /specs/stage1.spec; \
+:;
 
-#COPY assets/catalyst/specs/stage2.spec /specs/
-#
-#RUN \
-#--security=insecure \
-#set -eux; \
-#nice --adjustment="${build_niceness}" \
-#catalyst --file /specs/stage2.spec; \
-#:;
-#
-#COPY assets/catalyst/specs/stage3.spec /specs/
-#
-#RUN \
-#--security=insecure \
-#set -eux; \
-#nice --adjustment="${build_niceness}" \
-#catalyst --file /specs/stage3.spec; \
-#:;
-#
+COPY assets/catalyst/specs/stage2.spec /specs/
+
+RUN \
+--security=insecure \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+catalyst --file /specs/stage2.spec; \
+:;
+
+COPY assets/catalyst/specs/stage3.spec /specs/
+
+RUN \
+--security=insecure \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+catalyst --file /specs/stage3.spec; \
+:;
+
 ##
 ##RUN \
 ##--mount=type=tmpfs,target=/run \
