@@ -79,7 +79,7 @@ RUN \
 set -eux; \
 chattr +i /usr/share/portage/config/repos.conf; \
 chattr +i /etc/portage/repos.conf; \
-chattr +i /etc/portage/repos.conf/dnoland.conf; \
+chattr +i /etc/portage/repos.conf/gentoo.conf; \
 :;
 
 # Remove any trace of the original gentoo repo from our cache (it is just wasting space at this point)
@@ -214,12 +214,6 @@ emerge \
 ; \
 :;
 
-RUN \
-set -eux; \
-nice --adjustment="${build_niceness}" \
-emerge --depclean; \
-:;
-
 FROM bootstrap_step4_1 as catalyst_install
 COPY ./assets/catalyst-install/ /
 
@@ -254,17 +248,17 @@ COPY assets/catalyst/tmp/ /tmp/
 #tar --create --gz --file /var/tmp/catalyst/builds/musl/stage3-amd64-musl.tar.gz --directory=/run/step1 .; \
 #:;
 
-COPY --from=bootstrap_step4_0 / /run/stage3
+COPY --from=bootstrap_step4_1 / /run/stage3
 
 RUN \
 set -eux; \
 mkdir --parent /var/tmp/catalyst/builds/musl; \
 truncate --size=0 /run/stage3/usr/share/portage/config/repos.conf; \
 mkdir --parent /run/stage3/etc/portage/repos.conf/; \
-cp --archive /tmp/catalyst/stage1/etc/portage/repos.conf/dnoland.conf /run/stage3/etc/portage/repos.conf/dnoland.conf; \
+cp --archive /tmp/catalyst/stage1/etc/portage/repos.conf/gentoo.conf /run/stage3/etc/portage/repos.conf/gentoo.conf; \
 :;
 
-ARG gentoo_branch="profile{musl.clang}"
+ARG gentoo_branch="llvm{static}"
 
 ENV _nothing=1
 RUN \
@@ -282,6 +276,15 @@ RUN \
 set -eux; \
 for binary in /run/stage3/usr/lib/llvm/13/bin/*; do \
   ln --symbolic --relative "${binary}" "/run/stage3/usr/bin/$(basename "${binary}")"; \
+done; \
+:;
+
+RUN \
+set -eux; \
+for library in /run/stage3/usr/lib/llvm/13/lib/*.so; do \
+  if [[ ! -e "/run/stage3/usr/lib/$(basename $(readlink "${library}"))" ]]; then \
+    ln --symbolic --relative "${library}" "/run/stage3/usr/lib/$(basename $(readlink "${library}"))"; \
+  fi; \
 done; \
 :;
 
