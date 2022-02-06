@@ -1,11 +1,8 @@
 subarch: amd64
 target: stage2
-version_stamp: latest
+version_stamp: musl-clang-latest
 rel_type: musl
-profile: default/linux/amd64/17.0/musl
+profile: default/linux/amd64/17.0/musl/clang
 snapshot_treeish: latest
-source_subpath: musl/stage1-amd64-latest.tar.gz
+source_subpath: musl/clang/stage1-amd64-musl-clang-latest.tar.gz
 compression_mode: gzip
-#chost: x86_64-gentoo-linux-musl
-#portage_confdir: @REPO_DIR@/releases/portage/stages
-#portage_prefix: releng
