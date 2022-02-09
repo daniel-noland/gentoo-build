@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.3.0-labs
-ARG upstream_snapshot="20220205"
+ARG upstream_snapshot="20220207"
 ARG bootstrap_step0="gentoo/stage3:musl-${upstream_snapshot}"
 ARG build_niceness="15"
 FROM $bootstrap_step0 as bootstrap_step1
@@ -16,9 +16,27 @@ set -eux; \
 emerge-webrsync --revert="${upstream_snapshot}"; \
 :;
 
+# Sanity rebuild.  If this fails then something way downstream of it is basically sure to fail.
+# It takes time here but it saves time overall in the end.
 RUN \
 --mount=type=tmpfs,target=/run \
---mount=type=tmpfs,target=/var/tmp/portage \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --complete-graph \
+  --deep \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
+  @world \
+; \
+:;
+
+RUN \
+--mount=type=tmpfs,target=/run \
 set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
@@ -27,6 +45,25 @@ emerge \
   --deep \
   app-eselect/eselect-repository \
   dev-vcs/git \
+; \
+:;
+
+# Sanity rebuild.  If this fails then something way downstream of it is basically sure to fail.
+# It takes time here but it saves time overall in the end.
+RUN \
+--mount=type=tmpfs,target=/run \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --complete-graph \
+  --deep \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
+  @world \
 ; \
 :;
 
@@ -61,14 +98,13 @@ RUN emaint sync --allrepos
 # It takes time here but it saves time overall in the end.
 RUN \
 --mount=type=tmpfs,target=/run \
---mount=type=tmpfs,target=/var/tmp/portage \
 set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
   --complete-graph \
   --deep \
   --jobs="$(nproc)" \
-  --load-average="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
   --newuse \
   --update \
   --verbose \
@@ -78,15 +114,19 @@ emerge \
 :;
 
 RUN \
+set -eux; \
+emerge --depclean; \
+:;
+
+RUN \
 --mount=type=tmpfs,target=/run \
---mount=type=tmpfs,target=/var/tmp/portage \
 set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
   --complete-graph \
   --deep \
   --jobs="$(nproc)" \
-  --load-average="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
   --newuse \
   --update \
   --verbose \
@@ -96,6 +136,25 @@ emerge \
   sys-devel/llvm \
   sys-libs/compiler-rt \
   sys-libs/llvm-libunwind \
+; \
+:;
+
+# Sanity rebuild.  If this fails then something way downstream of it is basically sure to fail.
+# It takes time here but it saves time overall in the end.
+RUN \
+--mount=type=tmpfs,target=/run \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --complete-graph \
+  --deep \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
+  @world \
 ; \
 :;
 
@@ -116,8 +175,14 @@ RUN \
 set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
+  --complete-graph \
+  --deep \
   --jobs="$(nproc)" \
-  --load-average="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
   clang \
   compiler-rt \
   libcxx \
@@ -125,8 +190,31 @@ emerge \
   lld \
   llvm \
   llvm-libunwind \
-  z3 \
 ; \
+:;
+
+# Sanity rebuild.  If this fails then something way downstream of it is basically sure to fail.
+# It takes time here but it saves time overall in the end.
+RUN \
+--mount=type=tmpfs,target=/run \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --complete-graph \
+  --deep \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
+  @world \
+; \
+:;
+
+RUN \
+set -eux; \
+emerge --depclean; \
 :;
 
 FROM bootstrap_step2 as bootstrap_step3
@@ -144,9 +232,10 @@ emerge \
   --complete-graph \
   --deep \
   --jobs="$(nproc)" \
-  --load-average="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
   --newuse \
   --update \
+  --verbose \
   --with-bdeps=y \
   clang \
   compiler-rt \
@@ -157,6 +246,30 @@ emerge \
   llvm-libunwind \
   z3 \
 ; \
+:;
+
+# Sanity rebuild.  If this fails then something way downstream of it is basically sure to fail.
+# It takes time here but it saves time overall in the end.
+RUN \
+--mount=type=tmpfs,target=/run \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --complete-graph \
+  --deep \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
+  @world \
+; \
+:;
+
+RUN \
+set -eux; \
+emerge --depclean; \
 :;
 
 FROM bootstrap_step3 as bootstrap_step4_0
@@ -175,7 +288,7 @@ emerge \
   --deep \
   --emptytree \
   --jobs="$(nproc)" \
-  --load-average="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
   --newuse \
   --update \
   --with-bdeps=y \
@@ -186,6 +299,26 @@ emerge \
 RUN \
 set -eux; \
 emerge --depclean; \
+:;
+
+# Sanity rebuild.  If this fails then something way downstream of it is basically sure to fail.
+# It takes time here but it saves time overall in the end.
+RUN \
+--mount=type=tmpfs,target=/run \
+--mount=type=tmpfs,target=/var/tmp/portage \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --complete-graph \
+  --deep \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
+  @world \
+; \
 :;
 
 FROM bootstrap_step4_0 as bootstrap_step4_1
@@ -205,12 +338,42 @@ emerge \
   --deep \
   --emptytree \
   --jobs="$(nproc)" \
-  --load-average="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
   --newuse \
   --update \
   --with-bdeps=y \
   @world \
 ; \
+:;
+
+RUN \
+set -eux; \
+emerge --depclean; \
+:;
+
+# Sanity rebuild.  If this fails then something way downstream of it is basically sure to fail.
+# It takes time here but it saves time overall in the end.
+RUN \
+--mount=type=tmpfs,target=/run \
+--mount=type=tmpfs,target=/var/tmp/portage \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --complete-graph \
+  --deep \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
+  @world \
+; \
+:;
+
+RUN \
+set -eux; \
+emerge --depclean; \
 :;
 
 FROM bootstrap_step4_1 as catalyst_install
@@ -221,12 +384,44 @@ RUN \
 --mount=type=tmpfs,target=/var/tmp/portage \
 set -eux; \
 emerge \
+  --complete-graph \
+  --deep \
   --jobs="$(nproc)" \
-  --load-average="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
   app-arch/pixz \
   dev-util/catalyst \
   sys-fs/squashfs-tools \
 ; \
+:;
+
+# Sanity rebuild.  If this fails then something way downstream of it is basically sure to fail.
+# It takes time here but it saves time overall in the end.
+RUN \
+--mount=type=tmpfs,target=/run \
+--mount=type=tmpfs,target=/var/tmp/portage \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --complete-graph \
+  --deep \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
+  @world \
+; \
+:;
+
+RUN \
+--mount=type=tmpfs,target=/run \
+set -eux; \
+emerge --depclean; \
 :;
 
 FROM catalyst_install as catalyst_stage1
@@ -241,7 +436,7 @@ mkdir --parent /run/stage3/etc/portage/repos.conf/; \
 cp --archive /etc/portage/repos.conf/gentoo.conf /run/stage3/etc/portage/repos.conf/gentoo.conf; \
 :;
 
-ARG gentoo_branch="llvm{static}"
+ARG gentoo_branch="llvm{musl}"
 
 RUN \
 set -eux; \
