@@ -239,10 +239,33 @@ ARG build_niceness
 
 COPY assets/bootstrap/3/ /
 
+# Sanity rebuild.  If this fails then something way downstream of it is basically sure to fail.
+# It takes time here but it saves time overall in the end.
+RUN \
+--mount=type=tmpfs,target=/run \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --complete-graph \
+  --deep \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
+  @world \
+; \
+:;
+
+RUN \
+set -eux; \
+emerge --depclean; \
+:;
+
 # Re-compile optimized llvm/clang with llvm/clang
 RUN \
 --mount=type=tmpfs,target=/run \
---mount=type=tmpfs,target=/var/tmp/portage \
 set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
