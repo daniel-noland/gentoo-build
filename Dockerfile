@@ -168,10 +168,10 @@ ARG build_niceness
 
 COPY assets/bootstrap/2/ /
 
-# Compile llvm/clang with llvm/clang
+# Sanity rebuild.  If this fails then something way downstream of it is basically sure to fail.
+# It takes time here but it saves time overall in the end.
 RUN \
 --mount=type=tmpfs,target=/run \
---mount=type=tmpfs,target=/var/tmp/portage \
 set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
@@ -183,6 +183,23 @@ emerge \
   --update \
   --verbose \
   --with-bdeps=y \
+  @world \
+; \
+:;
+
+RUN \
+set -eux; \
+emerge --depclean; \
+:;
+
+# Compile llvm/clang with llvm/clang
+RUN \
+--mount=type=tmpfs,target=/run \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
   clang \
   compiler-rt \
   libcxx \
@@ -231,6 +248,7 @@ nice --adjustment="${build_niceness}" \
 emerge \
   --complete-graph \
   --deep \
+  --emptytree \
   --jobs="$(nproc)" \
   --load-average="$(($(nproc) * 2))" \
   --newuse \
@@ -280,7 +298,6 @@ COPY assets/bootstrap/4/ /
 # Re-compile all system packages with optimized llvm/clang.
 RUN \
 --mount=type=tmpfs,target=/run \
---mount=type=tmpfs,target=/var/tmp/portage \
 set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
@@ -291,6 +308,7 @@ emerge \
   --load-average="$(($(nproc) * 2))" \
   --newuse \
   --update \
+  --verbose \
   --with-bdeps=y \
   @world \
 ; \
@@ -305,7 +323,6 @@ emerge --depclean; \
 # It takes time here but it saves time overall in the end.
 RUN \
 --mount=type=tmpfs,target=/run \
---mount=type=tmpfs,target=/var/tmp/portage \
 set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
@@ -321,6 +338,11 @@ emerge \
 ; \
 :;
 
+RUN \
+set -eux; \
+emerge --depclean; \
+:;
+
 FROM bootstrap_step4_0 as bootstrap_step4_1
 ARG build_niceness
 
@@ -330,7 +352,6 @@ ARG build_niceness
 # Those libs are then candidates for static linking (and better LTO) in the second build.
 RUN \
 --mount=type=tmpfs,target=/run \
---mount=type=tmpfs,target=/var/tmp/portage \
 set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
