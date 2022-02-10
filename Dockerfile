@@ -318,6 +318,78 @@ ARG build_niceness
 
 COPY assets/bootstrap/4/ /
 
+# Sanity rebuild.  If this fails then something way downstream of it is basically sure to fail.
+# It takes time here but it saves time overall in the end.
+RUN \
+--mount=type=tmpfs,target=/run \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --complete-graph \
+  --deep \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
+  @world \
+; \
+:;
+
+RUN \
+set -eux; \
+emerge --depclean; \
+:;
+
+# Sanity rebuild.  If this fails then something way downstream of it is basically sure to fail.
+# It takes time here but it saves time overall in the end.
+RUN \
+--mount=type=tmpfs,target=/run \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --complete-graph \
+  --deep \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
+  @world \
+; \
+:;
+
+RUN \
+set -eux; \
+emerge --depclean; \
+:;
+
+# Sanity rebuild.  If this fails then something way downstream of it is basically sure to fail.
+# It takes time here but it saves time overall in the end.
+RUN \
+--mount=type=tmpfs,target=/run \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --complete-graph \
+  --deep \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
+  @world \
+; \
+:;
+
+RUN \
+set -eux; \
+emerge --depclean; \
+:;
+
 # Re-compile all system packages with optimized llvm/clang.
 RUN \
 --mount=type=tmpfs,target=/run \
@@ -327,6 +399,54 @@ emerge \
   --complete-graph \
   --deep \
   --emptytree \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
+  @world \
+; \
+:;
+
+RUN \
+set -eux; \
+emerge --depclean; \
+:;
+
+# Sanity rebuild.  If this fails then something way downstream of it is basically sure to fail.
+# It takes time here but it saves time overall in the end.
+RUN \
+--mount=type=tmpfs,target=/run \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --complete-graph \
+  --deep \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
+  @world \
+; \
+:;
+
+RUN \
+set -eux; \
+emerge --depclean; \
+:;
+
+# Sanity rebuild.  If this fails then something way downstream of it is basically sure to fail.
+# It takes time here but it saves time overall in the end.
+RUN \
+--mount=type=tmpfs,target=/run \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --complete-graph \
+  --deep \
   --jobs="$(nproc)" \
   --load-average="$(($(nproc) * 2))" \
   --newuse \
@@ -399,7 +519,54 @@ emerge --depclean; \
 # It takes time here but it saves time overall in the end.
 RUN \
 --mount=type=tmpfs,target=/run \
---mount=type=tmpfs,target=/var/tmp/portage \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --complete-graph \
+  --deep \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
+  @world \
+; \
+:;
+
+RUN \
+set -eux; \
+emerge --depclean; \
+:;
+
+# Sanity rebuild.  If this fails then something way downstream of it is basically sure to fail.
+# It takes time here but it saves time overall in the end.
+RUN \
+--mount=type=tmpfs,target=/run \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --complete-graph \
+  --deep \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
+  @world \
+; \
+:;
+
+RUN \
+set -eux; \
+emerge --depclean; \
+:;
+
+# Sanity rebuild.  If this fails then something way downstream of it is basically sure to fail.
+# It takes time here but it saves time overall in the end.
+RUN \
+--mount=type=tmpfs,target=/run \
 set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
@@ -423,9 +590,32 @@ emerge --depclean; \
 FROM bootstrap_step4_1 as catalyst_install
 COPY ./assets/catalyst/01_install/ /
 
+# Sanity rebuild.  If this fails then something way downstream of it is basically sure to fail.
+# It takes time here but it saves time overall in the end.
 RUN \
 --mount=type=tmpfs,target=/run \
---mount=type=tmpfs,target=/var/tmp/portage \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --complete-graph \
+  --deep \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
+  @world \
+; \
+:;
+
+RUN \
+set -eux; \
+emerge --depclean; \
+:;
+
+RUN \
+--mount=type=tmpfs,target=/run \
 set -eux; \
 emerge \
   --complete-graph \
@@ -446,7 +636,6 @@ emerge \
 # It takes time here but it saves time overall in the end.
 RUN \
 --mount=type=tmpfs,target=/run \
---mount=type=tmpfs,target=/var/tmp/portage \
 set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
