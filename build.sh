@@ -6,5 +6,6 @@ docker buildx use insecure-builder
 docker buildx build \
   --allow security.insecure \
   --tag gentoo-build \
-  --output type=docker,dest=- . |
-    docker load
+  --output type=docker,dest=/run/gentoo-build.tar .
+
+docker load </run/gentoo-build.tar
