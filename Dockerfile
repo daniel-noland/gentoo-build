@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.3.0-labs
-ARG upstream_snapshot="20220207"
+ARG upstream_snapshot="20220213"
 ARG bootstrap_step0="gentoo/stage3:musl-${upstream_snapshot}"
 ARG build_niceness="15"
 FROM $bootstrap_step0 as bootstrap_step1
