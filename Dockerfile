@@ -425,13 +425,20 @@ catalyst --file /specs/stage3.spec; \
 
 RUN \
 set -eux; \
-tar --extract --file /var/tmp/catalyst/builds/musl-clang/stage3-amd64-musl-clang.tar.gz --directory=/out; \
+mkdir /out; \
+tar --extract --file /var/tmp/catalyst/builds/musl-clang/stage3-amd64-musl-clang-latest.tar.gz --directory=/out; \
 :;
 
 FROM scratch as re_emerge_world
 ARG build_niceness
 
-COPY --from=bootstrap_step3 /out /
+COPY --from=catalyst_stage1 /out /
+COPY --from=catalyst_stage1 /run/stage3/var/db/repos/gentoo /var/db/repos/gentoo
+
+RUN \
+set -eux; \
+ln --symbolic /var/db/repos/gentoo /etc/portage/make.profile; \
+:;
 
 RUN \
 --mount=type=tmpfs,target=/run \
