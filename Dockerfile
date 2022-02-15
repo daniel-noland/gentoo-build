@@ -422,3 +422,65 @@ set -eux; \
 nice --adjustment="${build_niceness}" \
 catalyst --file /specs/stage3.spec; \
 :;
+
+RUN \
+set -eux; \
+tar --extract --file /var/tmp/catalyst/builds/musl-clang/stage3-amd64-musl-clang.tar.gz --directory=/out; \
+:;
+
+FROM scratch as re_emerge_world
+ARG build_niceness
+
+COPY --from=bootstrap_step3 /out /
+
+RUN \
+--mount=type=tmpfs,target=/run \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --complete-graph \
+  --deep \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
+  @system \
+; \
+:;
+
+RUN \
+--mount=type=tmpfs,target=/run \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --complete-graph \
+  --deep \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
+  @world \
+; \
+:;
+
+RUN \
+--mount=type=tmpfs,target=/run \
+set -eux; \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --complete-graph \
+  --deep \
+  --emptytree \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
+  @world \
+; \
+:;
