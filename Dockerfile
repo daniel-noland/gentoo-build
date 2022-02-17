@@ -345,19 +345,6 @@ mkdir --parent /run/stage3/etc/portage/repos.conf/; \
 cp --archive /etc/portage/repos.conf/gentoo.conf /run/stage3/etc/portage/repos.conf/gentoo.conf; \
 :;
 
-ARG gentoo_branch="llvm{musl}"
-
-RUN \
-set -eux; \
-rm --force --recursive /run/stage3/var/db/repos/gentoo; \
-git clone \
-  --depth 1 \
-  --branch "${gentoo_branch}" \
-  "https://github.com/daniel-noland/gentoo" \
-  /run/stage3/var/db/repos/gentoo \
-; \
-:;
-
 RUN \
 set -eux; \
 for binary in /run/stage3/usr/lib/llvm/13/bin/*; do \
@@ -383,6 +370,20 @@ tar \
   --file /var/tmp/catalyst/builds/musl/clang/stage3-amd64-musl-clang.tar.gz \
   --directory=/run/stage3 \
   . \
+; \
+:;
+
+ARG _nothing_=2
+ARG gentoo_branch="llvm{musl/clang}-rebase"
+
+RUN \
+set -eux; \
+rm --force --recursive /run/stage3/var/db/repos/gentoo; \
+git clone \
+  --depth 1 \
+  --branch "${gentoo_branch}" \
+  "https://github.com/daniel-noland/gentoo" \
+  /run/stage3/var/db/repos/gentoo \
 ; \
 :;
 
@@ -435,10 +436,13 @@ ARG build_niceness
 COPY --from=catalyst_stage1 /out /
 COPY --from=catalyst_stage1 /run/stage3/var/db/repos/gentoo /var/db/repos/gentoo
 
-RUN \
-set -eux; \
-ln --symbolic /var/db/repos/gentoo /etc/portage/make.profile; \
-:;
+#RUN \
+#set -eux; \
+#ln --symbolic \
+#  /var/db/repos/gentoo/var/db/repos/gentoo/profiles/default/linux/amd64/17.0/musl/clang/lto \
+#  /etc/portage/make.profile \
+#; \
+#:;
 
 RUN \
 --mount=type=tmpfs,target=/run \
