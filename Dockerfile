@@ -352,7 +352,7 @@ tar \
 ; \
 :;
 
-ARG _nothing_=2
+ARG _nothing_=3
 ARG gentoo_branch="llvm{musl/clang}-rebase"
 
 RUN \
@@ -409,13 +409,6 @@ SHELL ["/bin/bash", "-euxETo", "pipefail", "-c"]
 
 COPY --from=catalyst_stage1 /out /
 COPY --from=catalyst_stage1 /run/stage3/var/db/repos/gentoo /var/db/repos/gentoo
-
-#RUN \
-#ln --symbolic \
-#  /var/db/repos/gentoo/var/db/repos/gentoo/profiles/default/linux/amd64/17.0/musl/clang/lto \
-#  /etc/portage/make.profile \
-#; \
-#:;
 
 RUN \
 --mount=type=tmpfs,target=/run \
