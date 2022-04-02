@@ -1,10 +1,12 @@
 # syntax=docker/dockerfile:1.3.0-labs
-ARG upstream_snapshot="20220213"
+ARG upstream_snapshot="20220401"
 ARG bootstrap_step0="gentoo/stage3:musl-${upstream_snapshot}"
 ARG build_niceness="15"
 FROM $bootstrap_step0 as bootstrap_step1
 ARG upstream_snapshot
 ARG build_niceness
+
+SHELL ["/bin/bash", "-euxETo", "pipefail", "-c"]
 
 # Sync with timestamped "master" gentoo repo (we can't emerge anything without this)
 # we use our upstream_snapshot arg to make sure we are getting exactly the same packages every time.
@@ -12,7 +14,6 @@ ARG build_niceness
 # then we should most likely push the container after the emerge-webrsync to hold it in docker (or set up our own
 # rsync mirror).
 RUN \
-set -eux; \
 emerge-webrsync --revert="${upstream_snapshot}"; \
 :;
 
@@ -20,7 +21,6 @@ emerge-webrsync --revert="${upstream_snapshot}"; \
 # It takes time here but it saves time overall in the end.
 RUN \
 --mount=type=tmpfs,target=/run \
-set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
   --complete-graph \
@@ -37,7 +37,6 @@ emerge \
 
 RUN \
 --mount=type=tmpfs,target=/run \
-set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
   --verbose \
@@ -52,7 +51,6 @@ emerge \
 # It takes time here but it saves time overall in the end.
 RUN \
 --mount=type=tmpfs,target=/run \
-set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
   --complete-graph \
@@ -73,7 +71,6 @@ RUN rm --force --recursive /var/db/repos/gentoo
 
 # Remove the official gentoo repo (we want the snapshot instead)
 RUN \
-set -eux; \
 mv /usr/share/portage/config/repos.conf{,.orig}; \
 touch /usr/share/portage/config/repos.conf; \
 :;
@@ -82,7 +79,6 @@ touch /usr/share/portage/config/repos.conf; \
 # (in case a dispatch-conf wants to overwrite it I expect it to fail here)
 RUN \
 --security=insecure \
-set -eux; \
 chattr +i /usr/share/portage/config/repos.conf; \
 chattr +i /etc/portage/repos.conf; \
 chattr +i /etc/portage/repos.conf/gentoo.conf; \
@@ -98,7 +94,6 @@ RUN emaint sync --allrepos
 # It takes time here but it saves time overall in the end.
 RUN \
 --mount=type=tmpfs,target=/run \
-set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
   --complete-graph \
@@ -114,13 +109,11 @@ emerge \
 :;
 
 RUN \
-set -eux; \
 emerge --depclean; \
 :;
 
 RUN \
 --mount=type=tmpfs,target=/run \
-set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
   --complete-graph \
@@ -143,7 +136,6 @@ emerge \
 # It takes time here but it saves time overall in the end.
 RUN \
 --mount=type=tmpfs,target=/run \
-set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
   --complete-graph \
@@ -159,12 +151,12 @@ emerge \
 :;
 
 RUN \
-set -eux; \
 emerge --depclean; \
 :;
 
 FROM bootstrap_step1 as bootstrap_step2
 ARG build_niceness
+SHELL ["/bin/bash", "-euxETo", "pipefail", "-c"]
 
 COPY assets/bootstrap/2/ /
 
@@ -172,7 +164,6 @@ COPY assets/bootstrap/2/ /
 # It takes time here but it saves time overall in the end.
 RUN \
 --mount=type=tmpfs,target=/run \
-set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
   --complete-graph \
@@ -188,14 +179,12 @@ emerge \
 :;
 
 RUN \
-set -eux; \
 emerge --depclean; \
 :;
 
 # Compile llvm/clang with llvm/clang
 RUN \
 --mount=type=tmpfs,target=/run \
-set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
   --jobs="$(nproc)" \
@@ -214,7 +203,6 @@ emerge \
 # It takes time here but it saves time overall in the end.
 RUN \
 --mount=type=tmpfs,target=/run \
-set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
   --complete-graph \
@@ -230,12 +218,12 @@ emerge \
 :;
 
 RUN \
-set -eux; \
 emerge --depclean; \
 :;
 
 FROM bootstrap_step2 as bootstrap_step3
 ARG build_niceness
+SHELL ["/bin/bash", "-euxETo", "pipefail", "-c"]
 
 COPY assets/bootstrap/3/ /
 
@@ -243,7 +231,6 @@ COPY assets/bootstrap/3/ /
 # It takes time here but it saves time overall in the end.
 RUN \
 --mount=type=tmpfs,target=/run \
-set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
   --complete-graph \
@@ -259,18 +246,17 @@ emerge \
 :;
 
 RUN \
-set -eux; \
 emerge --depclean; \
 :;
 
 FROM bootstrap_step3 as catalyst_install
+SHELL ["/bin/bash", "-euxETo", "pipefail", "-c"]
 COPY ./assets/catalyst/01_install/ /
 
 # Sanity rebuild.  If this fails then something way downstream of it is basically sure to fail.
 # It takes time here but it saves time overall in the end.
 RUN \
 --mount=type=tmpfs,target=/run \
-set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
   --complete-graph \
@@ -286,13 +272,11 @@ emerge \
 :;
 
 RUN \
-set -eux; \
 emerge --depclean; \
 :;
 
 RUN \
 --mount=type=tmpfs,target=/run \
-set -eux; \
 emerge \
   --complete-graph \
   --deep \
@@ -312,7 +296,6 @@ emerge \
 # It takes time here but it saves time overall in the end.
 RUN \
 --mount=type=tmpfs,target=/run \
-set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
   --complete-graph \
@@ -329,16 +312,15 @@ emerge \
 
 RUN \
 --mount=type=tmpfs,target=/run \
-set -eux; \
 emerge --depclean; \
 :;
 
 FROM catalyst_install as catalyst_stage1
+SHELL ["/bin/bash", "-euxETo", "pipefail", "-c"]
 
 COPY --from=bootstrap_step3 / /run/stage3
 
 RUN \
-set -eux; \
 mkdir --parent /var/tmp/catalyst/builds/musl; \
 truncate --size=0 /run/stage3/usr/share/portage/config/repos.conf; \
 mkdir --parent /run/stage3/etc/portage/repos.conf/; \
@@ -346,14 +328,12 @@ cp --archive /etc/portage/repos.conf/gentoo.conf /run/stage3/etc/portage/repos.c
 :;
 
 RUN \
-set -eux; \
 for binary in /run/stage3/usr/lib/llvm/13/bin/*; do \
   ln --symbolic --relative "${binary}" "/run/stage3/usr/bin/$(basename "${binary}")"; \
 done; \
 :;
 
 RUN \
-set -eux; \
 for library in /run/stage3/usr/lib/llvm/13/lib/*.so; do \
   if [[ ! -e "/run/stage3/usr/lib/$(basename "${library}")" ]]; then \
     ln --symbolic --relative "${library}" "/run/stage3/usr/lib/$(basename "${library}")"; \
@@ -362,7 +342,6 @@ done; \
 :;
 
 RUN \
-set -eux; \
 mkdir --parent /var/tmp/catalyst/builds/musl/clang; \
 tar \
   --gz \
@@ -377,7 +356,6 @@ ARG _nothing_=2
 ARG gentoo_branch="llvm{musl/clang}-rebase"
 
 RUN \
-set -eux; \
 rm --force --recursive /run/stage3/var/db/repos/gentoo; \
 git clone \
   --depth 1 \
@@ -388,7 +366,6 @@ git clone \
 :;
 
 RUN \
-set -eux; \
 mkdir --parent /var/tmp/catalyst/snapshots; \
 cd /run/stage3/var/db/repos/; \
 mksquashfs gentoo /var/tmp/catalyst/snapshots/gentoo-latest.sqfs; \
@@ -401,7 +378,6 @@ COPY assets/catalyst/02_run/specs/stage1.spec /specs/
 RUN \
 --security=insecure \
 --mount=type=tmpfs,target=/run \
-set -eux; \
 nice --adjustment="${build_niceness}" \
 catalyst --file /specs/stage1.spec; \
 :;
@@ -410,7 +386,6 @@ COPY assets/catalyst/02_run/specs/stage2.spec /specs/
 
 RUN \
 --security=insecure \
-set -eux; \
 nice --adjustment="${build_niceness}" \
 catalyst --file /specs/stage2.spec; \
 :;
@@ -419,25 +394,23 @@ COPY assets/catalyst/02_run/specs/stage3.spec /specs/
 
 RUN \
 --security=insecure \
-set -eux; \
 nice --adjustment="${build_niceness}" \
 catalyst --file /specs/stage3.spec; \
 :;
 
 RUN \
-set -eux; \
 mkdir /out; \
 tar --extract --file /var/tmp/catalyst/builds/musl-clang/stage3-amd64-musl-clang-latest.tar.gz --directory=/out; \
 :;
 
 FROM scratch as re_emerge_world
 ARG build_niceness
+SHELL ["/bin/bash", "-euxETo", "pipefail", "-c"]
 
 COPY --from=catalyst_stage1 /out /
 COPY --from=catalyst_stage1 /run/stage3/var/db/repos/gentoo /var/db/repos/gentoo
 
 #RUN \
-#set -eux; \
 #ln --symbolic \
 #  /var/db/repos/gentoo/var/db/repos/gentoo/profiles/default/linux/amd64/17.0/musl/clang/lto \
 #  /etc/portage/make.profile \
@@ -446,7 +419,6 @@ COPY --from=catalyst_stage1 /run/stage3/var/db/repos/gentoo /var/db/repos/gentoo
 
 RUN \
 --mount=type=tmpfs,target=/run \
-set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
   --complete-graph \
@@ -463,7 +435,6 @@ emerge \
 
 RUN \
 --mount=type=tmpfs,target=/run \
-set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
   --complete-graph \
@@ -480,7 +451,6 @@ emerge \
 
 RUN \
 --mount=type=tmpfs,target=/run \
-set -eux; \
 nice --adjustment="${build_niceness}" \
 emerge \
   --complete-graph \
