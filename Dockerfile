@@ -360,7 +360,7 @@ tar \
 ; \
 :;
 
-ARG _nothing_=48.0
+ARG _nothing_=49.0
 ARG gentoo_branch="llvm{musl/clang}-rebase"
 
 RUN \
