@@ -1,0 +1,1 @@
+dev-libs/libgcrypt o-flag-munging # lifted this from the official clang profile.  Should let clang build libgcrypt.

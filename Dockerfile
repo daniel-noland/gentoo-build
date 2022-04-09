@@ -315,7 +315,7 @@ RUN \
 emerge --depclean; \
 :;
 
-FROM catalyst_install as catalyst_stage1
+FROM catalyst_install as catalyst
 SHELL ["/bin/bash", "-euxETo", "pipefail", "-c"]
 
 COPY --from=bootstrap_step3 / /run/stage3
@@ -342,17 +342,25 @@ done; \
 :;
 
 RUN \
+rm /run/stage3/etc/portage/make.profile; \
+cd /run/stage3/etc/portage/; \
+ln -r -s ../../var/db/repos/gentoo/profiles/default/linux/amd64/17.0/musl/clang/ make.profile; \
+:;
+
+#COPY ./assets/catalyst/03_scratch/etc/portage/package.use/bootstrap /run/stage3/etc/portage/package.use
+#COPY ./assets/catalyst/03_scratch/etc/portage/make.conf /run/stage3/etc/portage/make.conf
+
+RUN \
 mkdir --parent /var/tmp/catalyst/builds/musl/clang; \
 tar \
-  --gz \
   --create \
-  --file /var/tmp/catalyst/builds/musl/clang/stage3-amd64-musl-clang.tar.gz \
+  --file /var/tmp/catalyst/builds/musl/clang/stage3-amd64-musl-clang.tar \
   --directory=/run/stage3 \
   . \
 ; \
 :;
 
-ARG _nothing_=3
+ARG _nothing_=48.0
 ARG gentoo_branch="llvm{musl/clang}-rebase"
 
 RUN \
@@ -371,13 +379,13 @@ cd /run/stage3/var/db/repos/; \
 mksquashfs gentoo /var/tmp/catalyst/snapshots/gentoo-latest.sqfs; \
 :;
 
-COPY assets/catalyst/02_run/etc/ /etc/
+#COPY assets/catalyst/02_run/etc/ /etc/
 
 COPY assets/catalyst/02_run/specs/stage1.spec /specs/
+COPY ./assets/catalyst/02_run/etc/catalyst/ /etc/catalyst/
 
 RUN \
 --security=insecure \
---mount=type=tmpfs,target=/run \
 nice --adjustment="${build_niceness}" \
 catalyst --file /specs/stage1.spec; \
 :;
@@ -398,63 +406,63 @@ nice --adjustment="${build_niceness}" \
 catalyst --file /specs/stage3.spec; \
 :;
 
-RUN \
-mkdir /out; \
-tar --extract --file /var/tmp/catalyst/builds/musl-clang/stage3-amd64-musl-clang-latest.tar.gz --directory=/out; \
-:;
-
-FROM scratch as re_emerge_world
-ARG build_niceness
-SHELL ["/bin/bash", "-euxETo", "pipefail", "-c"]
-
-COPY --from=catalyst_stage1 /out /
-COPY --from=catalyst_stage1 /run/stage3/var/db/repos/gentoo /var/db/repos/gentoo
-
-RUN \
---mount=type=tmpfs,target=/run \
-nice --adjustment="${build_niceness}" \
-emerge \
-  --complete-graph \
-  --deep \
-  --jobs="$(nproc)" \
-  --load-average="$(($(nproc) * 2))" \
-  --newuse \
-  --update \
-  --verbose \
-  --with-bdeps=y \
-  @system \
-; \
-:;
-
-RUN \
---mount=type=tmpfs,target=/run \
-nice --adjustment="${build_niceness}" \
-emerge \
-  --complete-graph \
-  --deep \
-  --jobs="$(nproc)" \
-  --load-average="$(($(nproc) * 2))" \
-  --newuse \
-  --update \
-  --verbose \
-  --with-bdeps=y \
-  @world \
-; \
-:;
-
-RUN \
---mount=type=tmpfs,target=/run \
-nice --adjustment="${build_niceness}" \
-emerge \
-  --complete-graph \
-  --deep \
-  --emptytree \
-  --jobs="$(nproc)" \
-  --load-average="$(($(nproc) * 2))" \
-  --newuse \
-  --update \
-  --verbose \
-  --with-bdeps=y \
-  @world \
-; \
-:;
+#RUN \
+#mkdir /out; \
+#tar --extract --file /var/tmp/catalyst/builds/musl-clang/stage3-amd64-musl-clang-latest.tar.gz --directory=/out; \
+#:;
+#
+#FROM scratch as re_emerge_world
+#ARG build_niceness
+#SHELL ["/bin/bash", "-euxETo", "pipefail", "-c"]
+#
+#COPY --from=catalyst /out /
+#COPY --from=catalyst /run/stage3/var/db/repos/gentoo /var/db/repos/gentoo
+#
+#RUN \
+#--mount=type=tmpfs,target=/run \
+#nice --adjustment="${build_niceness}" \
+#emerge \
+#  --complete-graph \
+#  --deep \
+#  --jobs="$(nproc)" \
+#  --load-average="$(($(nproc) * 2))" \
+#  --newuse \
+#  --update \
+#  --verbose \
+#  --with-bdeps=y \
+#  @system \
+#; \
+#:;
+#
+#RUN \
+#--mount=type=tmpfs,target=/run \
+#nice --adjustment="${build_niceness}" \
+#emerge \
+#  --complete-graph \
+#  --deep \
+#  --jobs="$(nproc)" \
+#  --load-average="$(($(nproc) * 2))" \
+#  --newuse \
+#  --update \
+#  --verbose \
+#  --with-bdeps=y \
+#  @world \
+#; \
+#:;
+#
+#RUN \
+#--mount=type=tmpfs,target=/run \
+#nice --adjustment="${build_niceness}" \
+#emerge \
+#  --complete-graph \
+#  --deep \
+#  --emptytree \
+#  --jobs="$(nproc)" \
+#  --load-average="$(($(nproc) * 2))" \
+#  --newuse \
+#  --update \
+#  --verbose \
+#  --with-bdeps=y \
+#  @world \
+#; \
+#:;

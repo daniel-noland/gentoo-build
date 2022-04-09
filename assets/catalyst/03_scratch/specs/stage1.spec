@@ -7,3 +7,5 @@ snapshot_treeish: latest
 source_subpath: musl/clang/stage3-amd64-musl-clang.tar
 compression_mode: gzip
 update_seed: no
+repos: /run/stage3/var/db/repos/gentoo
+#portage_confdir: /run/stage3/etc/portage
