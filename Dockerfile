@@ -341,11 +341,11 @@ for library in /run/stage3/usr/lib/llvm/13/lib/*.so; do \
 done; \
 :;
 
-RUN \
-rm /run/stage3/etc/portage/make.profile; \
-cd /run/stage3/etc/portage/; \
-ln -r -s ../../var/db/repos/gentoo/profiles/default/linux/amd64/17.0/musl/clang/ make.profile; \
-:;
+#RUN \
+#rm /run/stage3/etc/portage/make.profile; \
+#cd /run/stage3/etc/portage/; \
+#ln -r -s ../../var/db/repos/gentoo/profiles/default/linux/amd64/17.0/musl/clang/ make.profile; \
+#:;
 
 #COPY ./assets/catalyst/03_scratch/etc/portage/package.use/bootstrap /run/stage3/etc/portage/package.use
 #COPY ./assets/catalyst/03_scratch/etc/portage/make.conf /run/stage3/etc/portage/make.conf
@@ -360,7 +360,7 @@ tar \
 ; \
 :;
 
-ARG _nothing_=49.0
+ARG _nothing_=58.0
 ARG gentoo_branch="llvm{musl/clang}-rebase"
 
 RUN \
