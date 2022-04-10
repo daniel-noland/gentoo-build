@@ -360,7 +360,7 @@ tar \
 ; \
 :;
 
-ARG _nothing_=63.0
+ARG _nothing_=64.0
 ARG gentoo_branch="llvm{musl/clang}-rebase"
 
 RUN \
@@ -405,51 +405,50 @@ nice --adjustment="${build_niceness}" \
 catalyst --file /specs/stage3.spec; \
 :;
 
+RUN \
+mkdir /out; \
+tar --extract --file /var/tmp/catalyst/builds/musl-clang-lto/stage3-amd64-musl-clang-lto.tar.gz --directory=/out; \
+:;
 
-#RUN \
-#mkdir /out; \
-#tar --extract --file /var/tmp/catalyst/builds/musl-clang/stage3-amd64-musl-clang-latest.tar.gz --directory=/out; \
-#:;
-#
-#FROM scratch as re_emerge_world
-#ARG build_niceness
-#SHELL ["/bin/bash", "-euxETo", "pipefail", "-c"]
-#
-#COPY --from=catalyst /out /
-#COPY --from=catalyst /run/stage3/var/db/repos/gentoo /var/db/repos/gentoo
-#
-#RUN \
-#--mount=type=tmpfs,target=/run \
-#nice --adjustment="${build_niceness}" \
-#emerge \
-#  --complete-graph \
-#  --deep \
-#  --jobs="$(nproc)" \
-#  --load-average="$(($(nproc) * 2))" \
-#  --newuse \
-#  --update \
-#  --verbose \
-#  --with-bdeps=y \
-#  @system \
-#; \
-#:;
-#
-#RUN \
-#--mount=type=tmpfs,target=/run \
-#nice --adjustment="${build_niceness}" \
-#emerge \
-#  --complete-graph \
-#  --deep \
-#  --jobs="$(nproc)" \
-#  --load-average="$(($(nproc) * 2))" \
-#  --newuse \
-#  --update \
-#  --verbose \
-#  --with-bdeps=y \
-#  @world \
-#; \
-#:;
-#
+FROM scratch as re_emerge_world
+ARG build_niceness
+SHELL ["/bin/bash", "-euxETo", "pipefail", "-c"]
+
+COPY --from=catalyst /out /
+COPY --from=catalyst /run/stage3/var/db/repos/gentoo /var/db/repos/gentoo
+
+RUN \
+--mount=type=tmpfs,target=/run \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --complete-graph \
+  --deep \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
+  @system \
+; \
+:;
+
+RUN \
+--mount=type=tmpfs,target=/run \
+nice --adjustment="${build_niceness}" \
+emerge \
+  --complete-graph \
+  --deep \
+  --jobs="$(nproc)" \
+  --load-average="$(($(nproc) * 2))" \
+  --newuse \
+  --update \
+  --verbose \
+  --with-bdeps=y \
+  @world \
+; \
+:;
+
 #RUN \
 #--mount=type=tmpfs,target=/run \
 #nice --adjustment="${build_niceness}" \

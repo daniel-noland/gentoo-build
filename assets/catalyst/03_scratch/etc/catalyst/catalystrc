@@ -17,3 +17,17 @@ export STRIP="llvm-strip"
 export CFLAGS="-fPIC -fstack-protector-strong -D_FORTIFY_SOURCE=2 -O3 -march=native -pipe -flto=thin"
 export CXXFLAGS="${CFLAGS}"
 
+CATALYST_USE="${CATALYST_USE} -X"
+CATALYST_USE="${CATALYST_USE} -accessibility"
+CATALYST_USE="${CATALYST_USE} -bash-completion"
+CATALYST_USE="${CATALYST_USE} -bluetooth"
+CATALYST_USE="${CATALYST_USE} -branding"
+CATALYST_USE="${CATALYST_USE} -doc"
+CATALYST_USE="${CATALYST_USE} -examples"
+CATALYST_USE="${CATALYST_USE} -man"
+CATALYST_USE="${CATALYST_USE} -ncurses"
+CATALYST_USE="${CATALYST_USE} -sqlite"
+CATALYST_USE="${CATALYST_USE} -systemd"
+CATALYST_USE="${CATALYST_USE} -test"
+
+export CATALYST_USE
