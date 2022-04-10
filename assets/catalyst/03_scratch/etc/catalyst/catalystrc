@@ -13,3 +13,7 @@ export RANLIB="llvm-ranlib"
 export READELF="llvm-readelf"
 export STRINGS="llvm-strings"
 export STRIP="llvm-strip"
+
+export CFLAGS="-fPIC -fstack-protector-strong -D_FORTIFY_SOURCE=2 -O3 -march=native -pipe -flto=thin"
+export CXXFLAGS="${CFLAGS}"
+
