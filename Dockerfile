@@ -360,7 +360,7 @@ tar \
 ; \
 :;
 
-ARG _nothing_=60.0
+ARG _nothing_=63.0
 ARG gentoo_branch="llvm{musl/clang}-rebase"
 
 RUN \
@@ -379,8 +379,6 @@ cd /run/stage3/var/db/repos/; \
 mksquashfs gentoo /var/tmp/catalyst/snapshots/gentoo-latest.sqfs; \
 :;
 
-#COPY assets/catalyst/02_run/etc/ /etc/
-
 COPY assets/catalyst/02_run/specs/stage1.spec /specs/
 COPY ./assets/catalyst/02_run/etc/catalyst/ /etc/catalyst/
 
@@ -398,26 +396,7 @@ nice --adjustment="${build_niceness}" \
 catalyst --file /specs/stage2.spec; \
 :;
 
-ARG _nothing_=63.0
-RUN \
-rm --force --recursive /run/stage3/var/db/repos/gentoo; \
-git clone \
-  --depth 1 \
-  --branch "${gentoo_branch}" \
-  "https://github.com/daniel-noland/gentoo" \
-  /run/stage3/var/db/repos/gentoo \
-; \
-:;
-
-RUN \
-rm -fr /var/tmp/catalyst/snapshots/gentoo-latest.sqfs; \
-mkdir --parent /var/tmp/catalyst/snapshots; \
-cd /run/stage3/var/db/repos/; \
-mksquashfs gentoo /var/tmp/catalyst/snapshots/gentoo-latest.sqfs; \
-:;
-
 COPY assets/catalyst/02_run/specs/stage3.spec /specs/
-COPY ./assets/bootstrap/4/etc/portage/make.conf /run/stage3/etc/portage/make.conf
 COPY assets/catalyst/03_scratch/etc/catalyst/catalystrc /etc/catalyst/catalystrc
 
 RUN \
